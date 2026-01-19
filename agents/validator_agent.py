@@ -1,0 +1,28 @@
+from .agent_base import AgentBase
+
+class ValidatorAgent(AgentBase):
+    def __init__(self, max_retries=2, verbose=True):
+        super().__init__(name="ValidatorAgent", max_retries=max_retries, verbose=verbose)
+
+    def execute(self, topic, article):
+        messages = [
+            {
+                "role": "system",
+                "content": "You are an AI assistant that validates historical articles for accuracy, completeness, and adherence to academic standards."
+            },
+            {
+                "role": "user",
+                "content":
+                            "Given the topic and the historical article below, evaluate whether the article comprehensively covers the topic, follows a logical structure, and maintains academic standards.\n"
+                            "Provide a brief analysis and rate the article on a scale from 1 to 5, where 5 indicates excellent quality.\n\n"
+                            f"Topic: {topic}\n\n"
+                            f"Article:\n{article}\n\n"
+                            "Validation:" 
+            }
+        ]
+        validation = self.call_openai(
+            messages=messages,
+            temperature=0.3, # lower temperature => more deterministic output
+            max_tokens=500,
+        )
+        return validation

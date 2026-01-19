@@ -1,0 +1,6 @@
+openai
+groq
+streamlit
+pandas
+loguru
+python-dotenv
