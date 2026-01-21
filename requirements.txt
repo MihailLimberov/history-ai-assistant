@@ -4,3 +4,6 @@ streamlit
 pandas
 loguru
 python-dotenv
+# Optional dependencies for file format support
+PyPDF2  # For PDF file support
+python-docx  # For DOCX file support

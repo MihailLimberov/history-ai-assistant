@@ -1,6 +1,7 @@
 import streamlit as st
 from agents import AgentManager
 from utils.logger import logger
+from utils.file_validator import file_upload_section
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -30,7 +31,26 @@ def main():
 
 def summarize_section(agent_manager):
     st.header("Summarize Historical Text")
-    text = st.text_area("Enter historical text to summarize:", height=200)
+    
+    # Add input method selection
+    input_method = st.radio("Choose input method:", ["Type Text", "Upload File"], key="summarize_input")
+    
+    text = None
+    
+    if input_method == "Type Text":
+        text = st.text_area("Enter historical text to summarize:", height=200, key="summarize_text")
+    else:
+        # File upload
+        content, filename = file_upload_section(
+            label="Upload a historical text file",
+            help_text="Upload .txt, .md, .pdf, .docx, or .csv files",
+            key="summarize_file"
+        )
+        if content:
+            text = content
+            with st.expander("📄 View uploaded content"):
+                st.text_area("File content:", value=text, height=200, disabled=True)
+    
     if st.button("Summarize"):
         if text:
             main_agent = agent_manager.get_agent("summarize")
@@ -54,12 +74,31 @@ def summarize_section(agent_manager):
                     st.error(f"Validation Error: {e}")
                     logger.error(f"SummarizeValidatorAgent Error: {e}")
         else:
-            st.warning("Please enter some text to summarize.")
+            st.warning("Please enter some text or upload a file to summarize.")
 
 def write_and_refine_article_section(agent_manager):
     st.header("Write and Refine Historical Article")
+    
     topic = st.text_input("Enter the topic for the historical article:")
-    outline = st.text_area("Enter an outline (optional):", height=150)
+    
+    # Add option for outline input
+    outline_method = st.radio("Outline input method:", ["Type Outline", "Upload File"], key="outline_input")
+    
+    outline = None
+    
+    if outline_method == "Type Outline":
+        outline = st.text_area("Enter an outline (optional):", height=150, key="outline_text")
+    else:
+        content, filename = file_upload_section(
+            label="Upload an outline file (optional)",
+            help_text="Upload .txt, .md, or .docx files",
+            key="outline_file"
+        )
+        if content:
+            outline = content
+            with st.expander("📄 View uploaded outline"):
+                st.text_area("Outline content:", value=outline, height=150, disabled=True)
+    
     if st.button("Write and Refine Article"):
         if topic:
             writer_agent = agent_manager.get_agent("write_article")
@@ -98,7 +137,26 @@ def write_and_refine_article_section(agent_manager):
 
 def historical_events_finder(agent_manager):
     st.header("Find events on a given Year/Century")
-    year_century = st.text_area("Enter Year/Century to get important events:", height=100)
+    
+    # Add input method selection
+    input_method = st.radio("Choose input method:", ["Type Date", "Upload File"], key="events_input")
+    
+    year_century = None
+    
+    if input_method == "Type Date":
+        year_century = st.text_area("Enter Year/Century to get important events:", height=100, key="events_text")
+    else:
+        # File upload - useful if user has multiple dates/years
+        content, filename = file_upload_section(
+            label="Upload a file with years/centuries",
+            help_text="Upload .txt or .csv file with dates",
+            key="events_file"
+        )
+        if content:
+            year_century = content
+            with st.expander("📄 View uploaded dates"):
+                st.text_area("File content:", value=year_century, height=100, disabled=True)
+    
     if st.button("Find Events"):
         if year_century:
             main_agent = agent_manager.get_agent("historical_events")
@@ -122,7 +180,7 @@ def historical_events_finder(agent_manager):
                     st.error(f"Validation Error: {e}")
                     logger.error(f"EventsFinderValidatorAgent Error: {e}")
         else:
-            st.warning("Please enter Year/Century.")
+            st.warning("Please enter Year/Century or upload a file.")
 
 if __name__ == "__main__":
     main()
